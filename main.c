@@ -188,21 +188,20 @@ int secondary_processes(int process_Rank)
         phi2[i] = (double *)malloc((n / 2 + 1) * sizeof(double));
     }
 
-    for (int i = 0; i < n/2 + 1; i++)
+    for (int i = 0; i < n / 2 + 1; i++)
     {
-        for (int j = 0; j < n/2 + 1; j++)
+        for (int j = 0; j < n / 2 + 1; j++)
         {
             phi1[i][j] = 0;
             phi1[i][j] = 0;
         }
     }
-    
 
     double **h_sqare_ro = (double **)malloc((n / 2) * sizeof(double *));
     for (int i = 0; i < (n / 2); i++)
     {
         h_sqare_ro[i] = (double *)malloc((n / 2) * sizeof(double));
-    }    
+    }
 
     // Получение исходных данных
 
@@ -315,9 +314,30 @@ int secondary_processes(int process_Rank)
 
         if (i % Q == 0)
         {
-            for (int k = 0; k < n / 2; k++)
+            if (process_Rank == 1)
             {
-                MPI_Ssend(phi1[k], n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+                for (int k = 0; k < n / 2; k++)
+                {
+                    MPI_Ssend(phi1[k], n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+                }
+            } else if (process_Rank == 2)
+            {
+                for (int k = 0; k < n / 2; k++)
+                {
+                    MPI_Ssend(phi1[k + 1], n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+                }
+            } else if (process_Rank == 3)
+            {
+                for (int k = 0; k < n / 2; k++)
+                {
+                    MPI_Ssend(phi1[k] + 1, n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+                }
+            } else if (process_Rank == 4)
+            {
+                for (int k = 0; k < n / 2; k++)
+                {
+                    MPI_Ssend(phi1[k + 1] + 1, n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+                }
             }
         }
     }
