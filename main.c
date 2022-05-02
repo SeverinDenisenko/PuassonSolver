@@ -4,7 +4,7 @@
 #include <mpi.h>
 
 #define I 1000
-#define Q 100
+#define Q 50
 
 int zero_process();
 int secondary_processes(int process_Rank);
@@ -26,6 +26,7 @@ int main(int argc, char **argv)
         secondary_processes(process_Rank);
     }
 
+    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Finalize();
     return 0;
 }
@@ -96,8 +97,13 @@ int zero_process()
         phi[i] = (double *)malloc(n * sizeof(double));
     }
 
-    for (int i = 0; i < I / Q; i++)
+    for (int i = 0; i < I; i++)
     {
+        if (i % Q != 0)
+        {
+            continue;
+        }
+
         //                   ____  __.---""---.__  ____
         //                  /####\/              \/####\
         //                 (   /\ )              ( /\   )
@@ -119,7 +125,7 @@ int zero_process()
         //            /.-./.--.|.--.\          /.--.|.--.\.-.|
 
         char filename[1000];
-        sprintf(filename, "DATA/result%03d.dat", i);
+        sprintf(filename, "DATA/result%03d.dat", i / Q);
 
         MPI_Status status;
         for (int k = 0; k < n / 2; k++)
@@ -148,8 +154,20 @@ int zero_process()
         }
 
         fclose(result);
-        printf("file %03d generated.\n", i);
+        printf("file %03d generated.\n", i / Q);
     }
+
+    for (int i = 0; i < n; i++)
+    {
+        free(phi[i]);
+    }
+    free(phi);
+
+    for (int i = 0; i < n; i++)
+    {
+        free(h_sqare_ro[i]);
+    }
+    free(h_sqare_ro);
 
     return 0;
 }
@@ -164,17 +182,27 @@ int secondary_processes(int process_Rank)
     double **phi1 = (double **)malloc((n / 2 + 1) * sizeof(double *));
     double **phi2 = (double **)malloc((n / 2 + 1) * sizeof(double *));
 
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < (n / 2 + 1); i++)
     {
         phi1[i] = (double *)malloc((n / 2 + 1) * sizeof(double));
         phi2[i] = (double *)malloc((n / 2 + 1) * sizeof(double));
     }
 
+    for (int i = 0; i < n/2 + 1; i++)
+    {
+        for (int j = 0; j < n/2 + 1; j++)
+        {
+            phi1[i][j] = 0;
+            phi1[i][j] = 0;
+        }
+    }
+    
+
     double **h_sqare_ro = (double **)malloc((n / 2) * sizeof(double *));
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < (n / 2); i++)
     {
         h_sqare_ro[i] = (double *)malloc((n / 2) * sizeof(double));
-    }
+    }    
 
     // Получение исходных данных
 
@@ -183,16 +211,18 @@ int secondary_processes(int process_Rank)
         MPI_Recv(h_sqare_ro[i], n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, &status);
     }
 
-    // Вычисления
+    // Вычисления //
+
+    // Граничные данные
+
+    double *send1 = (double *)malloc((n / 2) * sizeof(double));
+    double *send2 = (double *)malloc((n / 2) * sizeof(double));
+    double *get1 = (double *)malloc((n / 2) * sizeof(double));
+    double *get2 = (double *)malloc((n / 2) * sizeof(double));
 
     for (int i = 0; i < I; i++)
     {
         // Обмен граничными значениями
-
-        double *send1 = (double *)malloc((n / 2) * sizeof(double));
-        double *send2 = (double *)malloc((n / 2) * sizeof(double));
-        double *get1 = (double *)malloc((n / 2) * sizeof(double));
-        double *get2 = (double *)malloc((n / 2) * sizeof(double));
 
         if (process_Rank == 1)
         {
@@ -291,6 +321,25 @@ int secondary_processes(int process_Rank)
             }
         }
     }
+
+    free(send1);
+    free(send2);
+    free(get1);
+    free(get2);
+
+    for (int i = 0; i < n / 2 + 1; i++)
+    {
+        free(phi1[i]);
+        free(phi2[i]);
+    }
+    free(phi1);
+    free(phi2);
+
+    for (int i = 0; i < n / 2; i++)
+    {
+        free(h_sqare_ro[i]);
+    }
+    free(h_sqare_ro);
 
     return 0;
 }

@@ -7,7 +7,7 @@ run: build $(wildcard data.dat)
 	mpiexec -np 5 -host localhost:8 ./build
 
 build: $(wildcard *.c *.h)
-	mpicc *.c -o build
+	mpicc -O3 -Wall -Wextra *.c -o build
 
 .PHONY: clean
 clean:
