@@ -1,10 +1,10 @@
 all: plot
 
-plot: run
+plot: run $(wildcard plot.plt)
 	gnuplot plot.plt
 
 run: build $(wildcard data.dat)
-	mpiexec -np 1 -host localhost:8 ./build
+	mpiexec -np 5 -host localhost:8 ./build
 
 build: $(wildcard *.c *.h)
 	mpicc *.c -o build
