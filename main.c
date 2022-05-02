@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ITERATION 1000
-#define OUTPUT_FREQUENCY 10
+#define I 1000
+#define Q 10
 
 int main(int argc, char **argv)
 {
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
         phi2[i] = (double *)malloc(n * sizeof(double));
     }
 
-    for (int i = 0; i < ITERATION; i++)
+    for (int i = 0; i < I; i++)
     {
         for (int k = 1; k < n - 1; k++)
         {
@@ -69,23 +69,30 @@ int main(int argc, char **argv)
         phi1 = phi2;
         phi2 = tmp;
 
-        if (i % OUTPUT_FREQUENCY == 0)
+        if (i % Q == 0)
         {
+            //                   ____  __.---""---.__  ____
+            //                  /####\/              \/####\
+            //                 (   /\ )              ( /\   )
+            //                 \____/                \____/
+            //                __/                          \__
+            //             .-"    .                      .    "-.
+            //             |  |   \.._                _../   |  |
+            //              \  \    \."-.__________.-"./    /  /
+            //                \  \    "--.________.--"    /  /
+            //              ___\  \_                    _/  /___
+            //            ./    )))))                  (((((    \.
+            //            \                                      /
+            //             \           \_          _/           /
+            //               \    \____/""-.____.-""\____/    /
+            //                 \    \                  /    /
+            //                  \.  .|                |.  ./
+            //                ." / |  \              /  | \  ".
+            //             ."  /   |   \            /   |   \   ".
+            //            /.-./.--.|.--.\          /.--.|.--.\.-.|
 
-            //   \|/ ____ \|/
-            //    @~/ ,. \~@
-            //   /_( \__/ )_\       
-            //      \__U_/
-
-            char filename[2000];
-            char str[500];
-            filename[0] = '\0';
-            sprintf(str, "DATA/result");
-            strcat(filename, str);
-            snprintf(str, 5, "%03d", i / OUTPUT_FREQUENCY);
-            strcat(filename, str);
-            sprintf(str, ".dat");
-            strcat(filename, str);
+            char filename[1000];
+            sprintf(filename, "DATA/result%03d.dat", i / Q);
 
             FILE *result = fopen(filename, "w");
 
@@ -102,7 +109,7 @@ int main(int argc, char **argv)
             }
 
             fclose(result);
-            printf("file %03d generated.\n",  i / OUTPUT_FREQUENCY);
+            printf("file %03d generated.\n",  i / Q);
         }
     }
 
