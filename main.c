@@ -80,11 +80,17 @@ int zero_process()
     for (int i = 0; i < n / 2; i++)
     {
         MPI_Ssend(h_sqare_ro[i], n / 2, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD);
-        MPI_Ssend(h_sqare_ro[i + n / 2], n / 2, MPI_DOUBLE, 2, 0, MPI_COMM_WORLD);
     }
     for (int i = 0; i < n / 2; i++)
     {
-        MPI_Ssend(h_sqare_ro[i] + n / 2, n / 2, MPI_DOUBLE, 3, 0, MPI_COMM_WORLD);
+        MPI_Ssend(h_sqare_ro[i] + n / 2, n / 2, MPI_DOUBLE, 2, 0, MPI_COMM_WORLD);
+    }
+    for (int i = 0; i < n / 2; i++)
+    {
+        MPI_Ssend(h_sqare_ro[i + n / 2], n / 2, MPI_DOUBLE, 3, 0, MPI_COMM_WORLD);
+    }
+    for (int i = 0; i < n / 2; i++)
+    {
         MPI_Ssend(h_sqare_ro[i + n / 2] + n / 2, n / 2, MPI_DOUBLE, 4, 0, MPI_COMM_WORLD);
     }
 
@@ -131,13 +137,20 @@ int zero_process()
         for (int k = 0; k < n / 2; k++)
         {
             MPI_Recv(phi[k], n / 2, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, &status);
-            MPI_Recv(phi[k + n / 2], n / 2, MPI_DOUBLE, 2, 0, MPI_COMM_WORLD, &status);
         }
         for (int k = 0; k < n / 2; k++)
         {
-            MPI_Recv(phi[k] + n / 2, n / 2, MPI_DOUBLE, 3, 0, MPI_COMM_WORLD, &status);
+            MPI_Recv(phi[k] + n / 2, n / 2, MPI_DOUBLE, 2, 0, MPI_COMM_WORLD, &status);
+        }
+        for (int k = 0; k < n / 2; k++)
+        {
+            MPI_Recv(phi[k + n / 2], n / 2, MPI_DOUBLE, 3, 0, MPI_COMM_WORLD, &status);
+        }
+        for (int k = 0; k < n / 2; k++)
+        {
             MPI_Recv(phi[k + n / 2] + n / 2, n / 2, MPI_DOUBLE, 4, 0, MPI_COMM_WORLD, &status);
         }
+        
 
         FILE *result = fopen(filename, "w");
 
@@ -154,7 +167,6 @@ int zero_process()
         }
 
         fclose(result);
-        printf("file %03d generated.\n", i / Q);
     }
 
     for (int i = 0; i < n; i++)
@@ -227,8 +239,8 @@ int secondary_processes(int process_Rank)
         {
             for (int k = 0; k < n / 2; k++)
             {
-                send1[k] = phi1[n / 2 - 1][k];
-                send2[k] = phi1[k][n / 2 - 1];
+                send2[k] = phi1[n / 2 - 1][k];
+                send1[k] = phi1[k][n / 2 - 1];
             }
 
             MPI_Ssend(send1, n / 2, MPI_DOUBLE, 2, 0, MPI_COMM_WORLD);
@@ -238,8 +250,8 @@ int secondary_processes(int process_Rank)
 
             for (int k = 0; k < n / 2; k++)
             {
-                phi1[n / 2][k] = get1[k];
-                phi1[k][n / 2] = get2[k];
+                phi1[n / 2][k] = get2[k];
+                phi1[k][n / 2] = get1[k];
             }
         }
         else if (process_Rank == 2)
@@ -320,19 +332,22 @@ int secondary_processes(int process_Rank)
                 {
                     MPI_Ssend(phi1[k], n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
                 }
-            } else if (process_Rank == 2)
-            {
-                for (int k = 0; k < n / 2; k++)
-                {
-                    MPI_Ssend(phi1[k + 1], n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
-                }
-            } else if (process_Rank == 3)
+            }
+            else if (process_Rank == 2)
             {
                 for (int k = 0; k < n / 2; k++)
                 {
                     MPI_Ssend(phi1[k] + 1, n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
                 }
-            } else if (process_Rank == 4)
+            }
+            else if (process_Rank == 3)
+            {
+                for (int k = 0; k < n / 2; k++)
+                {
+                    MPI_Ssend(phi1[k + 1], n / 2, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+                }
+            }
+            else if (process_Rank == 4)
             {
                 for (int k = 0; k < n / 2; k++)
                 {
